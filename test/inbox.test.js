@@ -419,7 +419,7 @@ describe('sistema', () => {
     }
     assert(saltaAvisoOk);
   });
-  //
+  // estructura a montar para probar el cambio de centro de un médico
   // accounts[0] -> sistema clinico
   // accounts[1] -> Centro 1
   // accounts[2] -> Centro 2
@@ -439,7 +439,6 @@ describe('sistema', () => {
       arguments: []
     })
     .send({ from: accounts[1], gas: '10000000' });
-    
     // se asocia el sistema clinico con el centro2
     await sistema.methods.newCentroMedico(accounts[2], "Centro 2", centro2.options.address ).send({ from: accounts[0] , gas: '1000000000' });
     // se asocia el centro 1 con medico 1 
@@ -450,13 +449,13 @@ describe('sistema', () => {
       data: byteMedico,
       arguments: []
     })
-    .send({ from: accounts[0], gas: '100000000'});
-    
+    .send({ from: accounts[0], gas: '100000000'});    
     // se asocia el centro 1 con medico 2 
     await sistema.methods.newMedico(accounts[4], accounts[1], "Medico 2", medico2.options.address ).send({ from: accounts[0] , gas: '1000000000' });
     // se asocia el medico 1 con el paciente 1    
     await sistema.methods.newPaciente(accounts[5], accounts[3], "Paciente 1", paciente.options.address ).send({ from: accounts[0] , gas: '1000000000' });
     // se hace el deploy del segundo paciente
+    
     
     const paciente2 = await new web3.eth.Contract(abiPaciente)
     .deploy({
@@ -467,44 +466,32 @@ describe('sistema', () => {
     // se asocia el medico 1 con el paciente 2
     await sistema.methods.newPaciente(accounts[6], accounts[3], "Paciente 2", paciente2.options.address ).send({ from: accounts[0] , gas: '1000000000' });
     
-    const numMedicosCentro1Ini = await centro.methods.getNumMedicos().call();
-    const numPacientesMedico1Ini = await medico.methods.getNumPacientes().call();
-    const numMedicosCentro2Ini = await centro2.methods.getNumMedicos().call();
-    const numPacientesMedico2Ini = await medico2.methods.getNumPacientes().call();
-    
-
-    console.log("numMedicosCentro1Inii= ", numMedicosCentro1Ini)
-    console.log("numPacientesMedico1Ini= ", numPacientesMedico1Ini)
-    console.log("numMedicosCentro2Inii= ", numMedicosCentro2Ini)
-    console.log("numPacientesMedico2Ini= ", numPacientesMedico2Ini)
+    const numMedicosIniCentro1   = await centro.methods.getNumMedicos().call();
+    const numPacientesIniMedico1 = await medico.methods.getNumPacientes().call();
+    const numMedicosIniCentro2   = await centro2.methods.getNumMedicos().call();
+    const numPacientesIniMedico2 = await medico2.methods.getNumPacientes().call();
+    //console.log("numMedicosIniCentro1   = ", numMedicosIniCentro1)
+    //console.log("numPacientesIniMedico1 = ", numPacientesIniMedico1)
+    //console.log("numMedicosIniCentro2   = ", numMedicosIniCentro2)
+    //console.log("numPacientesIniMedico2 = ", numPacientesIniMedico2)
     // se ejecuta el cambio de medico de centro
     // accounts[0] -> sistema clinico
     // accounts[1] -> Centro 1
     // accounts[2] -> Centro 2
     // accounts[3] -> Medico 1
     // accounts[4] -> Medico 2
-    // accounts[5] -> Paciente 1 lqkjldidjlfkjsDF
+    // accounts[5] -> Paciente 1
     // accounts[6] -> Paciente 2
-    await sistema.methods.cambioMedicoToCentro(accounts[2], accounts[3], accounts[3]).send({ from: accounts[0] , gas: '1000000000' });
-    const numMedicosCentro1Fin = await centro.methods.getNumMedicos().call();
-    const numPacientesMedico1Fin = await medico.methods.getNumPacientes().call();
-    const numMedicosCentro2Fin = await centro2.methods.getNumMedicos().call();
-    const numPacientesMedico2Fin = await medico2.methods.getNumPacientes().call();
-    console.log("numMedicosCentro1Fin= ", numMedicosCentro1Fin)
-    console.log("numPacientesMedico1Fin= ", numPacientesMedico1Fin)
-    console.log("numMedicosCentro2Fin= ", numMedicosCentro2Fin)
-    console.log("numPacientesMedico2Fin= ", numPacientesMedico2Fin)
-
-    /*
-    try{
-      // alta de diagnostico del paciente ==  medico
-      await medico.methods.altatDiagnostico(accounts[2], 20190620, "sintoma del paciente 1 del dia 20190620", "Esta es la parte del tratamient del paciente", 14 ).send({ from: accounts[0] , gas: '1000000000' });
-      saltaAvisoOk=false;
-    }catch(e) {
-      saltaAvisoOk=true;
-    }
-    assert(saltaAvisoOk);
-    */
+    await sistema.methods.cambioMedicoToCentro(accounts[2], accounts[3], accounts[4]).send({ from: accounts[0] , gas: '1000000000' });
+    const numMedicosFinCentro1   = await centro.methods.getNumMedicos().call();
+    const numPacientesFinMedico1 = await medico.methods.getNumPacientes().call();
+    const numMedicosFinCentro2   = await centro2.methods.getNumMedicos().call();
+    const numPacientesFinMedico2 = await medico2.methods.getNumPacientes().call();
+    //console.log("numMedicosFinCentro1   = ", numMedicosFinCentro1)
+    //console.log("numPacientesFinMedico1 = ", numPacientesFinMedico1)
+    //console.log("numMedicosFinCentro2   = ", numMedicosFinCentro2)
+    //console.log("numPacientesFinMedico2 = ", numPacientesFinMedico2)
+    assert.ok((numMedicosIniCentro1 - 1) == numMedicosFinCentro1 && (numPacientesIniMedico1 - 2) == numPacientesFinMedico1 && numMedicosIniCentro2  == (numMedicosFinCentro2-1) && numPacientesIniMedico1 == numPacientesFinMedico2);
   });
   //
   //

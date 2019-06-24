@@ -431,7 +431,6 @@ contract Medico {
         return(numPacientes);
     }
     function asociarPaciente(address _addrPaciente) public {
-        emit eventDir("asociarPaciente ",_addrPaciente); 
         Pacientes[_addrPaciente] = true;
         addrPacientes.push(_addrPaciente);
     }

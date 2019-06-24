@@ -1,7 +1,7 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
 const Web3 = require('web3');
 const ganache = require("ganache-cli");
-const { interface, bytecode } = require('./compile');
+const smartContracts = require('../compile');
 
 console.log('Pasa 1');
 const provider = new HDWalletProvider( 
