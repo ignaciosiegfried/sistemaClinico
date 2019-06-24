@@ -483,7 +483,7 @@ describe('sistema', () => {
     // accounts[2] -> Centro 2
     // accounts[3] -> Medico 1
     // accounts[4] -> Medico 2
-    // accounts[5] -> Paciente 1
+    // accounts[5] -> Paciente 1 lqkjldidjlfkjsDF
     // accounts[6] -> Paciente 2
     await sistema.methods.cambioMedicoToCentro(accounts[2], accounts[3], accounts[3]).send({ from: accounts[0] , gas: '1000000000' });
     const numMedicosCentro1Fin = await centro.methods.getNumMedicos().call();
