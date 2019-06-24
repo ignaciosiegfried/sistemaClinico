@@ -1,0 +1,22 @@
+{
+  "name": "sistemaclinico",
+  "version": "1.0.0",
+  "description": "Aplicacion sistema clinico",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --timeout 10000 --exit",
+    "build": "node compile.js",
+    "deploy": "node deploy.js"
+  },
+  "author": "",
+  "license": "ISC", 
+  "devDependencies": {
+    "mocha": "^6.1.4",
+    "solc": "^0.5.2"
+  },
+  "dependencies": {
+    "ganache-cli": "^6.4.3",
+    "truffle-hdwallet-provider": "^0.0.3",
+    "web3": "1.0.0-beta.36" 
+  }
+}
