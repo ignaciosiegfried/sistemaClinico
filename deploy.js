@@ -1,28 +1,63 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
 const Web3 = require('web3');
 const ganache = require("ganache-cli");
-const smartContracts = require('../compile');
+require('events').EventEmitter.prototype._maxListeners = 1000;
+const smartContracts = require('./compile');
 
-console.log('Pasa 1');
-const provider = new HDWalletProvider( 
-   'rather flag mixture bitter symbol bracket wash kite odor spike object brass',
-   "rinkeby.infura.io/v3/d1c66a88232341bc92fee5e8e2f792f3"
-);
-console.log('Pasa 2');
+const abiProxy     = smartContracts['SistemaClinico.sol']['Proxy'].abi;
+const byteProxy    = smartContracts['SistemaClinico.sol']['Proxy'].evm.bytecode.object;
+const abiSistema   = smartContracts['SistemaClinico.sol']['SistemaClinico'].abi;
+const byteSistema  = smartContracts['SistemaClinico.sol']['SistemaClinico'].evm.bytecode.object;
+const abiCentro    = smartContracts['SistemaClinico.sol']['CentroMedico'].abi;
+const byteCentro   = smartContracts['SistemaClinico.sol']['CentroMedico'].evm.bytecode.object;
+const abiMedico    = smartContracts['SistemaClinico.sol']['Medico'].abi;
+const byteMedico   = smartContracts['SistemaClinico.sol']['Medico'].evm.bytecode.object;
+const abiPaciente  = smartContracts['SistemaClinico.sol']['Paciente'].abi;
+const bytePaciente = smartContracts['SistemaClinico.sol']['Paciente'].evm.bytecode.object;
+
 const web3 = new Web3();
-web3.setProvider(provider);
-console.log('Pasa 3');
+const options = { gasLimit: 99999999999999 };
+web3.setProvider(ganache.provider(options));
+
 const deploy = async () => {
-  console.log('Pasa 4');
   const accounts = await web3.eth.getAccounts();
+  console.log('Attempting to deploy from account', accounts);
 
-  console.log('Attempting to deploy from account', accounts[0]);
-
-  const result = await new web3.eth.Contract(JSON.parse(interface))
-    .deploy({ data: bytecode, arguments: ['Hi there!'] })
-    .send({ gas: '4000000', gasPrice: '30000000000' , from: accounts[0] });
-
-  console.log('Contract deployed to', result.options.address);
+  proxy = await new web3.eth.Contract(abiProxy)
+      .deploy({
+        data: byteProxy,
+        arguments: []
+    })
+    .send({ from: accounts[0], gas: '10000000'});
+  console.log('Contract proxy deployed to', proxy.options.address);
+  sistema = await new web3.eth.Contract(abiSistema)
+    .deploy({
+      data: byteSistema,
+      arguments: []
+  })
+  .send({ from: accounts[0], gas: '10000000' });
+  console.log('Contract sistema deployed to', sistema.options.address);
+  centro = await new web3.eth.Contract(abiCentro)
+    .deploy({
+      data: byteCentro,
+      arguments: []
+  })
+  .send({ from: accounts[1], gas: '10000000' });
+  console.log('Contract centro deployed to', centro.options.address);
+  medico = await new web3.eth.Contract(abiMedico)
+    .deploy({
+      data: byteMedico,
+      arguments: []
+  })
+  .send({ from: accounts[0], gas: '100000000'});
+  console.log('Contract medico deployed to', medico.options.address);
+  paciente = await new web3.eth.Contract(abiPaciente)
+    .deploy({
+      data: bytePaciente,
+      arguments: []
+  })
+  .send({ from: accounts[0], gas: '100000000' });
+  console.log('Contract paciente deployed to', paciente.options.address);
 };
 
 deploy()

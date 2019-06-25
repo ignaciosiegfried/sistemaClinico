@@ -95,9 +95,6 @@ describe('sistema', () => {
   it('deploys contract Proxy', () => {
     assert.ok(paciente.options.address);
   });
-  //
-  // PROXY
-  //
   it('getmanager', async () => {
     const ProxyPrueba = await new web3.eth.Contract(abiProxy)
     .deploy({
@@ -105,6 +102,7 @@ describe('sistema', () => {
       arguments: []
     })
     .send({ from: accounts[0], gas: '1000000000' });
+    // obtenemos el manager que tiene que coincidir con accounts[0]
     const addr = await proxy.methods.getmanager().call();
     assert.equal(accounts[0], addr);
   });
@@ -120,6 +118,7 @@ describe('sistema', () => {
     assert.equal(sistemaNuevo.options.address, addr);
   });
   it('newSistema. Asociar sistema clinico al proxy', async () => {
+    // se realiza la sociación de la direccion del contrato sistemaClinico con el del proxy
     await proxy.methods.newSistema(sistema.options.address, "Sistema 1").send({ from: accounts[0] });
     const message =  await sistema.methods.getDescripcion().call();
     assert.equal(message, 'Sistema 1');
@@ -164,9 +163,6 @@ describe('sistema', () => {
     }
     assert(saltaAvisoOk);
   });
-  //
-  // SISTEMA CLINICO
-  //
   it('newCentroMedico. Incluir centro medico en el sistema clinico', async () => {
     const nombreNewCentro = "Centro 1";
     // se tiene que crear primero la asociacion del proxy con el sistema clinico

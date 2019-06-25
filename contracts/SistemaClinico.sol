@@ -15,11 +15,12 @@ contract Proxy {
     constructor() public {
         manager = msg.sender;
     }
+    // se enlaza contrato proxy con sistema clinico
     function newSistema(address _SistemaClinicoAddr, string memory _descripcion) public OnlyMan() payable {
         SistemaClinicoAddr = _SistemaClinicoAddr;
         SistemaClinicoInterface(SistemaClinicoAddr).setValues(manager, _descripcion);
     }
-
+    // se actualiza el address del sistema clinico del proxy
     function setFactoryAddr(address _sistemaAddr) public  OnlyMan() {
         SistemaClinicoAddr = _sistemaAddr;
     }
@@ -32,36 +33,6 @@ contract Proxy {
 }
 
 contract SistemaClinicoInterface {
-    //address public manager;
-    /*modifier ValOnlyMan() { 
-        require(manager == msg.sender, "Operacion solo del manager.");
-        _;
-    }
-    modifier ValEsCentro(address _walletCentro) {
-        require(esCentro(_walletCentro), "El centro ya existe.");
-        _;
-    }
-    modifier ValNoEsCentro(address _walletCentro) {
-        require(!esCentro(_walletCentro), "El centro ya existe.");
-        _;
-    }
-    modifier ValEsMedico(address _walletMedico) {
-        require(esMedico(_walletMedico), "Wallet de médico no existe");
-        _;
-    }
-    modifier ValNoEsMedico(address _walletMedico) {
-        require(!esMedico(_walletMedico), "Wallet de médico ya existe");
-        _;
-    }
-    modifier ValEsPaciente(address _wllPac) {
-        require(esPaciente(_wllPac),"Wallet de paciente no existe.");
-        _;
-    }
-    modifier ValNoEsPaciente(address _wllPac) {
-        require(!esPaciente(_wllPac),"Wallet de paciente ya existe.");
-        _;
-    }
-    */
     function setValues(address _manager, string memory _descripcion) public;
     function newCentroMedico(address _walletCentro, string memory _NombreCentro, address _newAddrCentro) public;    
     function newMedico(address _walletMedico, address _walletCentro, string memory _nombre, address _newAddrMedico) public;
@@ -70,15 +41,9 @@ contract SistemaClinicoInterface {
     function setDescripcion(string memory) public;
     function getManager() public view returns(address);
     function getWalletCttCentro(address _walletCentro) public view returns(address);
-    //function setWalletCttCentro(address _walletCentro, address _cttCentro) private;
-    //function esCentro(address _addrCentro) private view returns(bool);
-    //function noEsCentro(address _addrCentro) private view returns(bool);
     function getWalletCttMedico(address _walletMedico) public view returns(address);
-    //function setWalletCttMedico(address _walletMedico, address _cttMedico) private;
     function esMedico(address _addrMedico) public view returns(bool);
     function getWalletCttPaciente(address _wllPac) public view returns(address);
-    //function setWalletCttPaciente(address _walletPaciente, address _cttPaciente) private;
-    //function esPaciente(address _addrPaciente) private view returns(bool);
     function cambioMedicoToCentro( address _walletCentroDest, address _walletMedico, address _walletMedicoHeredaPacientes) public;
 }
 
@@ -139,43 +104,38 @@ contract SistemaClinico {
         require(!esPaciente(_wllPac),"Wallet de paciente existe.");
         _;
     }
-   event dispSddr(string, address);
+    event dispSddr(string, address);
     event eventEstados(uint e);
-    
-    //event direccion(address sender);
     constructor() public payable{
         numCentros = 0;
     }
     function setValues(address _manager, string memory _descripcion) public {
-//        emit dispSddr("pasassss ", ProxyInterface(_addrProxy).getmanager());
-//        require(ProxyInterface(_addrProxy).getmanager() == _manager, "operación no permitida");
         manager = _manager;
         descripcion = _descripcion;
     }
+    //
+    // se enlaza contrato sistema clinico con Centro medico
     function newCentroMedico(address _walletCentro, string memory _NombreCentro, address _newAddrCentro) public ValOnlyMan() ValNoEsCentro(_walletCentro) {
         numCentros++;
-        
-        //address newAddr = new CentroMedico(manager, _walletCentro, _NombreCentro, this, numCentros);
         CentrosMedicos[_newAddrCentro] = true;
         addrCentros.push(_newAddrCentro);
         setWalletCttCentro(_walletCentro, _newAddrCentro);
         CentroMedicoInterface(_newAddrCentro).setValues(manager, _walletCentro, _NombreCentro,address(this),numCentros);
     }
-    
+    //
+    // se enlaza contrato Centro medico con medico
     function newMedico(address _walletMedico, address _walletCentro, string memory _nombre, address _newAddrMedico) public ValOnlyMan() ValNoEsMedico(_walletMedico) {
         address centroMedico = getWalletCttCentro(_walletCentro); 
         CentroMedicoInterface(centroMedico).addNumMedicos();
-        
-        //Medico newAddr = new Medico(manager, _walletMedico, _nombre, this, centroMedico, centroMedico.getNumMedicos());
         CentroMedicoInterface(centroMedico).asociarMedico(_newAddrMedico);
         setWalletCttMedico(_walletMedico, _newAddrMedico);
         MedicoInterface(_newAddrMedico).setValues(manager, _walletMedico, _nombre,address(this),centroMedico,CentroMedicoInterface(centroMedico).getNumMedicos());
     }
+    //
+    // se enlaza contrato medico con paciente
     function newPaciente(address _wllPac, address _walletMedico, string memory _nombre, address _newAddrPaciente) public ValOnlyMan() ValNoEsPaciente(_wllPac) {
         address medico = getWalletCttMedico(_walletMedico); 
         MedicoInterface(medico).addNumPacientes();
-        
-        //Paciente newAddr = new Paciente(manager, _wllPac, _nombre, this, medico.getCentro() , medico, medico.getNumPacientes(), uint(Estados.vivo) ); 
         MedicoInterface(medico).asociarPaciente(_newAddrPaciente);
         setWalletCttPaciente(_wllPac,_newAddrPaciente);
         PacienteInterface(_newAddrPaciente).setValues(manager, _wllPac, _nombre, address(this), MedicoInterface(medico).getCentro() , medico, MedicoInterface(medico).getNumPacientes(), uint(Estados.vivo) );
@@ -189,9 +149,13 @@ contract SistemaClinico {
     function getManager() public view returns(address) {
         return(manager);
     }
+    //
+    // se obtiene la direccion del contrato centro medico a partir de la direccion del wallet
     function getWalletCttCentro(address _walletCentro) public view returns(address) {
         return(WalletCttCentro[_walletCentro]);
     }
+    //
+    // se almacena la direccion del contrato centro medico con la direccion del wallet como indice
     function setWalletCttCentro(address _walletCentro, address _cttCentro) private ValNoEsCentro(_walletCentro) {
         WalletCttCentro[_walletCentro] = _cttCentro;
     }
@@ -201,9 +165,13 @@ contract SistemaClinico {
     function noEsCentro(address _addrCentro) private view returns(bool) {
         return(getWalletCttCentro(_addrCentro) == address(0));
     }
+    //
+    // se obtiene la direccion del contrato medico a partir de la direccion del wallet
     function getWalletCttMedico(address _walletMedico) public view returns(address) {
         return(WalletCttMedico[_walletMedico]);
     }
+    //
+    // se almacena la direccion del contrato medico con la direccion del wallet como indice
     function setWalletCttMedico(address _walletMedico, address _cttMedico) private {
         require(!esMedico(_walletMedico), "Operación solo realizable a wallet de medicos");
         WalletCttMedico[_walletMedico] = _cttMedico;
@@ -211,15 +179,21 @@ contract SistemaClinico {
     function esMedico(address _addrMedico) public view returns(bool) {
         return(getWalletCttMedico(_addrMedico) != address(0));
     }
+    //
+    // se obtiene la direccion del contrato paciente a partir de la direccion del wallet
     function getWalletCttPaciente(address _wllPac) public view returns(address) {
         return(WalletCttPaciente[_wllPac]);
     }
+    //
+    // se almacena la direccion del contrato paciente con la direccion del wallet como indice
     function setWalletCttPaciente(address _walletPaciente, address _cttPaciente) private ValNoEsPaciente(_walletPaciente){
         WalletCttPaciente[_walletPaciente] = _cttPaciente;
     }
     function esPaciente(address _addrPaciente) private view returns(bool) {
         return(getWalletCttPaciente(_addrPaciente) != address(0));
     }
+    //
+    // se realiza el cambio de centro de un medico. Para eso hay que informar del médico que se queda con sus pacientes (_walletMedicoHeredaPacientes)
     function cambioMedicoToCentro( address _walletCentroDest, address _walletMedico, address _walletMedicoHeredaPacientes) public {
         address centroOri = MedicoInterface(getWalletCttMedico(_walletMedico)).getCentro();
         address centroDest = getWalletCttCentro(_walletCentroDest);
@@ -244,34 +218,6 @@ contract SistemaClinico {
         CentroMedicoInterface(centroDest).asociarMedico(medicoIni);
         CentroMedicoInterface(centroDest).addNumMedicos();
     }
-    
-/*
-    function getEstados() public constant returns (string, string, string) {
-        return ("vivo","muerto","desaparecido");
-    }
-    function getEstadosValue (uint est) public constant returns (string) {
-        if (uint(SistemaClinico.Estados.vivo) == est) return "vivo";
-        if (uint(SistemaClinico.Estados.muerto) == est) return "muerto";
-        if (uint(SistemaClinico.Estados.desaparecido) == est) return "desaparecido";
-        return "";
-    }
-    function getEstadosKey (string _est) external constant returns (uint Est) {
-        if (keccak256(abi.encodePacked(_est)) == keccak256(abi.encodePacked("vivo"))) 
-            return (uint (SistemaClinico.Estados.vivo));
-        if (keccak256(abi.encodePacked(_est)) == keccak256(abi.encodePacked("muerto"))) 
-            return (uint (SistemaClinico.Estados.muerto));
-        if (keccak256(abi.encodePacked(_est)) == keccak256(abi.encodePacked("desaparecido"))) 
-            return (uint (SistemaClinico.Estados.desaparecido));
-    revert();
-    }
-    function LocalizaRegCentro(CentroMedico _addrCentro) private view returns(uint) {
-        for{ (uint i = 0; i < addrCentros.len gth; i++){
-            if (address(addrCentros[i]) == address(_addrCentro)){
-                return(i); 
-            }
-        }
-    }
-    */  
 }
 
 
@@ -349,9 +295,6 @@ contract CentroMedico {
             }
         }
     }
-    
-//    event Eventoestadoq(address , address );
-//    event direccion(uint est1, uint est2);
     function altatDiagnostico (address _walletMedico, address _walletPaciente, uint _fecha, string memory _diagnostico, string memory _tratamiento, uint _duracion) public {
         require(SistemaClinicoInterface(sistemaClinicoAddr).esMedico(_walletMedico), "Solo un médico puede introducir diagnósticos");
         require(_walletMedico != _walletPaciente, "Un medico no puede diagnosticarse a si mismo.");
@@ -361,9 +304,7 @@ contract CentroMedico {
 */        
         address paciente = SistemaClinicoInterface(sistemaClinicoAddr).getWalletCttPaciente(_walletPaciente);
         PacienteInterface(paciente).altatDiagnostico(_fecha, _diagnostico, _tratamiento, _duracion);
-        
     }
-    
 }
 
 
@@ -452,19 +393,12 @@ contract Medico {
             }
         }
     }
-    
+
     function altatDiagnostico (address _walletPaciente, uint _fecha, string memory _diagnostico, string memory _tratamiento, uint _duracion) public {
         CentroMedicoInterface(centroMedicoAddr).altatDiagnostico(addrMedico, _walletPaciente, _fecha, _diagnostico, _tratamiento, _duracion);
     }
 }
  
-
-
-
-
-
-
-
 contract PacienteInterface{
     function setValues(address _manager, address _addrPaciente, string memory _nombre, address _sistemaClinico, address _centroMedico, address _medico, uint _secPaciente, uint _estado) public;
     function altatDiagnostico (uint _fecha, string memory _sintomas, string memory _tratamiento, uint _duracion) public;
@@ -494,8 +428,7 @@ contract Paciente {
         string tratamiento;
         uint duracion;
     }
-    
-    //mapping(address => bool) public Historial;
+
     Diagnostico[] public Historial;
     
     event eventoDiagnostico(uint);
